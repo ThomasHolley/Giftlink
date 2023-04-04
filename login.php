@@ -19,3 +19,9 @@
     <a href="register.php">inscription</a>
 </body>
 </html>
+
+<form action="password_reset_request.php" method="post">
+    <h2>Réinitialiser le mot de passe</h2>
+    <input type="email" name="email" placeholder="Votre adresse e-mail" required>
+    <button type="submit">Envoyer le lien de réinitialisation</button>
+</form>

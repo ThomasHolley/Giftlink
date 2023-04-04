@@ -4,6 +4,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php';
+require_once 'email_credentials.php';
 require_once 'config.php';
 
 if (isset($_POST['email'])) {
@@ -34,10 +35,10 @@ if (isset($_POST['email'])) {
         try {
             // Paramètres du serveur
             $mail->isSMTP();
-            $mail->Host = 'ssl0.ovh.net'; // Remplacez par l'hôte SMTP de votre fournisseur de messagerie
+            $mail->Host = EMAIL_HOST; // Remplacez par l'hôte SMTP de votre fournisseur de messagerie
             $mail->SMTPAuth = true;
-            $mail->Username = 'thomas@hgconnect.fr'; // Remplacez par votre adresse e-mail
-            $mail->Password = '8*6/Fcdv2203'; // Remplacez par le mot de passe de votre e-mail
+            $mail->Username = EMAIL_USERNAME; // Remplacez par votre adresse e-mail
+            $mail->Password = EMAIL_PASSWORD; // Remplacez par le mot de passe de votre e-mail
             $mail->SMTPSecure = 'tls'; // Utilisez 'tls' pour les connexions non sécurisées ou 'ssl' pour les connexions sécurisées
             $mail->Port = 587; // Remplacez par le port SMTP approprié
 

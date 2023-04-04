@@ -1,3 +1,4 @@
 # .gitignore
 email_credentials.php
 .profile_pictures
+.config.php

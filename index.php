@@ -25,14 +25,19 @@
     <main>
         <?php
         require_once 'config.php';
-
+        session_start();
+        
         try {
-            $stmt = $conn->query("SELECT gift_lists.id, gift_lists.name, gift_lists.created_at, users.first_name, users.last_name FROM gift_lists JOIN users ON gift_lists.user_id = users.id ORDER BY gift_lists.created_at DESC");
+            $stmt = $conn->query("SELECT gift_lists.id, gift_lists.user_id, gift_lists.name, gift_lists.created_at, users.first_name, users.last_name FROM gift_lists JOIN users ON gift_lists.user_id = users.id ORDER BY gift_lists.created_at DESC");
 
             while ($list = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 echo '<div class="list">';
                 echo '<h2><a href="view_list.php?id=' . $list['id'] . '">' . htmlspecialchars($list['name']) . '</a></h2>';
                 echo '<p>Créée le ' . date('d/m/Y', strtotime($list['created_at'])) . ' par ' . htmlspecialchars($list['first_name']) . ' ' . htmlspecialchars($list['last_name']) . '</p>';
+                // Vérifie si l'utilisateur connecté est le créateur de la liste
+                if (isset($_SESSION['user_id']) && intval($_SESSION['user_id']) === intval($list['user_id'])) {
+                    echo '<a href="delete_list.php?id=' . $list['id'] . '">Supprimer</a>';
+                }
                 echo '</div>';
             }
         } catch (PDOException $e) {

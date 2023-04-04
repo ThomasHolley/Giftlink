@@ -20,6 +20,17 @@ if (isset($_POST['login'])) {
                 $_SESSION['email'] = $user['email'];
                 $_SESSION['first_name'] = $user['first_name'];
                 $_SESSION['last_name'] = $user['last_name'];
+                $_SESSION['birthdate'] = $user['birthdate'];
+                $_SESSION['profile_picture'] = $user['profile_picture'];
+
+                $_SESSION['user'] = [
+                    'id' => $user['id'],
+                    'email' => $user['email'],
+                    'first_name' => $user['first_name'],
+                    'last_name' => $user['last_name'],
+                    'birthdate' => $user['birthdate'],
+                    'profile_picture' => $user['profile_picture']
+                ];
 
                 // Rediriger vers la page d'accueil
                 header('Location: index.php');

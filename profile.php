@@ -34,6 +34,7 @@
 
                 if ($user) {
                     echo '<h2>Informations du profil</h2>';
+                    echo '<img src="' . htmlspecialchars($user['profile_picture']) . '" alt="Photo de profil" width="200">';
                     echo '<p>Prénom : ' . htmlspecialchars($user['first_name']) . '</p>';
                     echo '<p>Nom : ' . htmlspecialchars($user['last_name']) . '</p>';
                     echo '<p>Email : ' . htmlspecialchars($user['email']) . '</p>';
@@ -52,19 +53,28 @@
         <button id="edit-profile-button">Modifier son profil</button>
 
         <div id="edit-profile-form" style="display:none;">
-            <form action="update_profile.php" method="POST">
-                <label for="first_name">Prénom :</label>
+            <form action="update_profile.php" method="post" enctype="multipart/form-data">
+                <label for="first_name">Prénom:</label>
                 <input type="text" name="first_name" id="first_name" value="<?= htmlspecialchars($user['first_name']) ?>" required>
-                <label for="last_name">Nom :</label>
+                <br>
+                <label for="last_name">Nom:</label>
                 <input type="text" name="last_name" id="last_name" value="<?= htmlspecialchars($user['last_name']) ?>" required>
-                <label for="email">Email :</label>
+                <br>
+                <label for="email">Email:</label>
                 <input type="email" name="email" id="email" value="<?= htmlspecialchars($user['email']) ?>" required>
-                <label for="birthdate">Date de naissance :</label>
-                <input type="date" name="birthdate" id="birthdate" value="<?= htmlspecialchars($user['birthdate']) ?>" required>
-                <label for="password">Nouveau mot de passe (laisser vide pour ne pas changer) :</label>
+                <br>
+                <label for="birthdate">Date de naissance:</label>
+                <input type="date" name="birthdate" id="birthdate" value="<?= $user['birthdate'] ?>" required>
+                <br>
+                <label for="password">Nouveau mot de passe (laisser vide pour ne pas changer):</label>
                 <input type="password" name="password" id="password">
-                <button type="submit">Mettre à jour le profil</button>
+                <br>
+                <label for="profile_picture">Photo de profil (laisser vide pour ne pas changer):</label>
+                <input type="file" name="profile_picture" id="profile_picture">
+                <br>
+                <button type="submit" name="update_profile">Mettre à jour le profil</button>
             </form>
+
 
         </div>
     </main>

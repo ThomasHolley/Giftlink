@@ -11,12 +11,19 @@ if ($current_user_id && isset($_POST['gift_id']) && isset($_POST['reserved'])) {
     $reserved = $_POST['reserved'] === 'true';
 
     try {
-        $stmt = $conn->prepare('UPDATE gifts SET reserved = :reserved, reserved_by = :reserved_by WHERE id = :gift_id');
-        $stmt->bindParam(':gift_id', $gift_id);
-        $stmt->bindParam(':reserved', $reserved, PDO::PARAM_BOOL);
-        $reserved_by = $reserved ? $current_user_id : null;
-        $stmt->bindParam(':reserved_by', $reserved_by, PDO::PARAM_INT);
-        $stmt->execute();
+        if ($reserved) {
+            // Insérer une nouvelle entrée dans gift_selections
+            $stmt = $conn->prepare('INSERT INTO gift_selections (gift_id, user_id) VALUES (:gift_id, :user_id)');
+            $stmt->bindParam(':gift_id', $gift_id);
+            $stmt->bindParam(':user_id', $current_user_id);
+            $stmt->execute();
+        } else {
+            // Supprimer l'entrée existante de gift_selections
+            $stmt = $conn->prepare('DELETE FROM gift_selections WHERE gift_id = :gift_id AND user_id = :user_id');
+            $stmt->bindParam(':gift_id', $gift_id);
+            $stmt->bindParam(':user_id', $current_user_id);
+            $stmt->execute();
+        }
 
         echo json_encode(['success' => true]);
     } catch (PDOException $e) {
@@ -25,4 +32,3 @@ if ($current_user_id && isset($_POST['gift_id']) && isset($_POST['reserved'])) {
 } else {
     echo json_encode(['success' => false, 'message' => 'Paramètres manquants ou utilisateur non connecté']);
 }
-?>

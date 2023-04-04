@@ -1,6 +1,5 @@
 <?php
 session_start();
-require_once 'config.php';
 
 
 // Vérifier si l'utilisateur est connecté
@@ -16,10 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $user_id = $_SESSION['user_id'];
 
         // Connexion à la base de données
-        require_once 'db_connect.php';
+        require_once 'config.php';
 
         // Préparer la requête pour insérer la nouvelle liste dans la base de données
-        $sql = "INSERT INTO lists (name, user_id, created_at) VALUES (:name, :user_id, NOW())";
+        $sql = "INSERT INTO gift_lists (name, user_id, created_at) VALUES (:name, :user_id, NOW())";
 
         try {
             $stmt = $conn->prepare($sql);

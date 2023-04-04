@@ -13,6 +13,7 @@
         <nav>
             <div class="logo">GiftLink</div>
             <ul>
+                <li><a href="index.php">Accueil</a></li>
                 <li><a href="profile.php">Profil</a></li>
                 <li><a href="logout.php">Déconnexion</a></li>
             </ul>
@@ -41,7 +42,19 @@
                     echo '<h1>Liste de cadeaux : ' . htmlspecialchars($list['name']) . '</h1>';
 
                     // Récupérer les cadeaux de la liste
-                    $stmt_gifts = $conn->prepare("SELECT g.*, gs.user_id as reserved_by_user_id FROM gifts g LEFT JOIN gift_selections gs ON g.id = gs.gift_id WHERE g.gift_list_id = :list_id");
+                    $stmt_gifts = $conn->prepare("SELECT
+                    g.*,
+                    gs.user_id AS reserved_by_user_id,
+                    us.first_name AS reserved_by_user_first_name
+                FROM
+                    gifts g
+                LEFT JOIN gift_selections gs ON
+                    g.id = gs.gift_id
+                LEFT JOIN users us ON
+                    gs.user_id = us.id
+                WHERE
+                    g.gift_list_id = :list_id");
+
                     $stmt_gifts->bindParam(':list_id', $list_id);
                     $stmt_gifts->execute();
 
@@ -50,7 +63,8 @@
                         echo '<h2>' . htmlspecialchars($gift['name']) . '</h2>';
                         echo '<p>Prix : ' . htmlspecialchars($gift['price']) . ' €</p>';
                         echo '<p><a href="' . htmlspecialchars($gift['purchase_link']) . '">Lien vers le site d\'achat</a></p>';
-                        echo '<img src="' . htmlspecialchars($gift['image']) . '" alt="' . htmlspecialchars($gift['name']) . '">';
+                        echo '<img src="' . htmlspecialchars($gift['image'] ?? '', ENT_QUOTES, 'UTF-8') . '" alt="' . htmlspecialchars($gift['name'] ?? '', ENT_QUOTES, 'UTF-8') . '">';
+
 
                         $reserved = intval($gift['reserved_by_user_id']) === $current_user_id ? 'checked' : '';
                         $reserved_by_another_user = intval($gift['reserved_by_user_id']) !== 0 && intval($gift['reserved_by_user_id']) !== $current_user_id;
@@ -62,7 +76,7 @@
                             echo '<a href="delete_gift.php?id=' . $gift['id'] . '">Supprimer</a>';
                         } else {
                             if ($reserved_by_another_user) {
-                                echo '<p>Cadeau déjà pris</p>';
+                                echo '<p>Cadeau déjà pris par ' . $gift['reserved_by_user_first_name'] . '.</p>';
                             } else {
                                 echo '<input type="checkbox" class="reserve-gift" data-gift-id="' . $gift['id'] . '" ' . $reserved . '>';
                                 echo '<span class="reserved-info">' . $reserved_info . '</span>';

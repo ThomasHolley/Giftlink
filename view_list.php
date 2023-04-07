@@ -6,17 +6,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GiftLink - Liste de cadeaux</title>
     <!-- Ajoutez vos styles CSS ici -->
+    <!-- Ajoutez vos styles CSS ici -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="/vendor/twbs/bootstrap/dist/css/bootstrap.min.css">
+
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 </head>
 
 <body>
     <header>
-        <nav>
-            <div class="logo">GiftLink</div>
-            <ul>
-                <li><a href="index.php">Accueil</a></li>
-                <li><a href="profile.php">Profil</a></li>
-                <li><a href="logout.php">Déconnexion</a></li>
-            </ul>
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">Navbar</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.php">Accueil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="profile.php">Profil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="logout.php">Déconnexion</a>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
         </nav>
     </header>
     <main>
@@ -59,29 +82,49 @@
                     $stmt_gifts->execute();
 
                     while ($gift = $stmt_gifts->fetch(PDO::FETCH_ASSOC)) {
-                        echo '<div class="gift">';
-                        echo '<h2>' . htmlspecialchars($gift['name']) . '</h2>';
-                        echo '<p>Prix : ' . htmlspecialchars($gift['price']) . ' €</p>';
-                        echo '<p><a href="' . htmlspecialchars($gift['purchase_link']) . '">Lien vers le site d\'achat</a></p>';
-                        echo '<img src="' . htmlspecialchars($gift['image'] ?? '', ENT_QUOTES, 'UTF-8') . '" alt="' . htmlspecialchars($gift['name'] ?? '', ENT_QUOTES, 'UTF-8') . '">';
-
-
                         $reserved = intval($gift['reserved_by_user_id']) === $current_user_id ? 'checked' : '';
                         $reserved_by_another_user = intval($gift['reserved_by_user_id']) !== 0 && intval($gift['reserved_by_user_id']) !== $current_user_id;
                         $reserved_info = intval($gift['reserved_by_user_id']) !== 0 ? 'Réservé' : '';
+                        echo '
 
+        <div class="container py-5">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <!-- List group-->
+                    <ul class="list-group shadow">
+                        <!-- list group item-->
+                        <li class="list-group-item">
+                            <!-- Custom content-->
+                            <div class="media align-items-lg-center flex-column flex-lg-row p-3">
+                                <div class="media-body order-2 order-lg-1">
+                                    <h5 class="mt-0 font-weight-bold mb-2">' . htmlspecialchars($gift['name']) . '</h5>
+                                    <p><a href="' . htmlspecialchars($gift['purchase_link']) . '">Lien vers le site d\'achat</a></p>
+                                    <div class="d-flex align-items-center justify-content-between mt-1">
+                                        <h6 class="font-weight-bold my-2"> ' . htmlspecialchars($gift['price']) . ' €</h6>';
+                                        if ($is_owner) {
+                                            echo '<a href="edit_gift.php?id=' . $gift['id'] . '">Modifier</a>';
+                                            echo '<a href="delete_gift.php?id=' . $gift['id'] . '">Supprimer</a>';
+                                        } else {
+                                            if ($reserved_by_another_user) {
+                                                echo '<p>Cadeau déjà pris par ' . $gift['reserved_by_user_first_name'] . '.</p>';
+                                            } else {
+                                                echo '<input type="checkbox" class="reserve-gift" data-gift-id="' . $gift['id'] . '" ' . $reserved . '>';
+                                                echo '<span class="reserved-info">' . $reserved_info . '</span>';
+                                            }
+                                        }
+                                        echo '
+                                    </div>
+                                </div><img src="' . htmlspecialchars($gift['image'] ?? '', ENT_QUOTES, 'UTF-8') . '" alt="' . htmlspecialchars($gift['name'] ?? '', ENT_QUOTES, 'UTF-8') . '" alt="Generic placeholder image" width="200" class="ml-lg-5 order-1 order-lg-2">
+                            </div>
+                            <!-- End -->
+                        </li>
+                        <!-- End -->
 
-                        if ($is_owner) {
-                            echo '<a href="edit_gift.php?id=' . $gift['id'] . '">Modifier</a>';
-                            echo '<a href="delete_gift.php?id=' . $gift['id'] . '">Supprimer</a>';
-                        } else {
-                            if ($reserved_by_another_user) {
-                                echo '<p>Cadeau déjà pris par ' . $gift['reserved_by_user_first_name'] . '.</p>';
-                            } else {
-                                echo '<input type="checkbox" class="reserve-gift" data-gift-id="' . $gift['id'] . '" ' . $reserved . '>';
-                                echo '<span class="reserved-info">' . $reserved_info . '</span>';
-                            }
-                        }
+                    </ul>
+                    <!-- End -->
+                </div>
+            </div>
+        </div>';  
                         echo '</div>';
                     }
 

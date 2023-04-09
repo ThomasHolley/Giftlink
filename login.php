@@ -18,11 +18,16 @@
     <nav class="navbar navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="login.php">
-                <img src="/docs/5.1/assets/brand/bootstrap-logo.svg" alt="" width="30" height="24" class="d-inline-block align-text-top">
-                Bootstrap
+                <img src="src/logo/Logo_GiftLink_V1.png" alt="" width="50" height="48" class="d-inline-block align-text-top">
             </a>
         </div>
     </nav>
+    <?php
+    if (isset($_GET['account_deleted']) && $_GET['account_deleted'] == '1') {
+        echo '<div class="alert alert-success" role="alert">Votre compte a été supprimé avec succès.</div>';
+    }
+    ?>
+    
     <br>
     <div class="container">
         <div class="row">
@@ -35,6 +40,8 @@
                 <form action="login_process.php" method="post">
                     <div class="mb-3">
                         <label for="exampleInputEmail1" class="form-label">Email</label>
+                        <i class="glyphicon glyphicon-user"></i>
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
                         <input type="email" class="form-control" name="email" id="email" required aria-describedby="emailHelp">
                         <div id="emailHelp" class="form-text">Vos informations ne seront pas partagées.</div>
                     </div>

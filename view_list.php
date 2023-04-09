@@ -21,10 +21,9 @@
 
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">Navbar</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+            <a class="navbar-brand" href="index.php">
+                <img src="src/logo/Logo_GiftLink_V1.png" alt="" width="50" height="48" class="d-inline-block align-text-top">
+            </a>
                 <div class="collapse navbar-collapse" id="navbarNavDropdown">
                     <ul class="navbar-nav">
                         <li class="nav-item">
@@ -43,29 +42,44 @@
         </nav>
     </header>
     <main>
-        <?php
-        require_once 'config.php';
 
-        session_start();
-        $current_user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
+        <div class="col-lg-9 mt-4 mt-lg-0">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="user-dashboard-info-box table-responsive mb-0 bg-white p-4 shadow-sm">
+                        <table class="table manage-candidates-top mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Cadeau</th>
+                                    <th class="text-center">Prix</th>
+                                    <th class="action text-right">Action</th>
 
-        if (isset($_GET['id'])) {
-            $list_id = intval($_GET['id']);
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                require_once 'config.php';
 
-            try {
-                // Récupérer les informations de la liste
-                $stmt_list = $conn->prepare("SELECT id, name, user_id FROM gift_lists WHERE id = :list_id");
-                $stmt_list->bindParam(':list_id', $list_id);
-                $stmt_list->execute();
-                $list = $stmt_list->fetch(PDO::FETCH_ASSOC);
+                                session_start();
+                                $current_user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
 
-                if ($list) {
-                    $is_owner = $current_user_id === intval($list['user_id']);
+                                if (isset($_GET['id'])) {
+                                    $list_id = intval($_GET['id']);
 
-                    echo '<h1>Liste de cadeaux : ' . htmlspecialchars($list['name']) . '</h1>';
+                                    try {
+                                        // Récupérer les informations de la liste
+                                        $stmt_list = $conn->prepare("SELECT id, name, user_id FROM gift_lists WHERE id = :list_id");
+                                        $stmt_list->bindParam(':list_id', $list_id);
+                                        $stmt_list->execute();
+                                        $list = $stmt_list->fetch(PDO::FETCH_ASSOC);
 
-                    // Récupérer les cadeaux de la liste
-                    $stmt_gifts = $conn->prepare("SELECT
+                                        if ($list) {
+                                            $is_owner = $current_user_id === intval($list['user_id']);
+
+                                            echo '<h1>Liste de cadeaux : ' . htmlspecialchars($list['name']) . '</h1>';
+
+                                            // Récupérer les cadeaux de la liste
+                                            $stmt_gifts = $conn->prepare("SELECT
                     g.*,
                     gs.user_id AS reserved_by_user_id,
                     us.first_name AS reserved_by_user_first_name
@@ -78,83 +92,109 @@
                 WHERE
                     g.gift_list_id = :list_id");
 
-                    $stmt_gifts->bindParam(':list_id', $list_id);
-                    $stmt_gifts->execute();
+                                            $stmt_gifts->bindParam(':list_id', $list_id);
+                                            $stmt_gifts->execute();
 
-                    while ($gift = $stmt_gifts->fetch(PDO::FETCH_ASSOC)) {
-                        $reserved = intval($gift['reserved_by_user_id']) === $current_user_id ? 'checked' : '';
-                        $reserved_by_another_user = intval($gift['reserved_by_user_id']) !== 0 && intval($gift['reserved_by_user_id']) !== $current_user_id;
-                        $reserved_info = intval($gift['reserved_by_user_id']) !== 0 ? 'Réservé' : '';
-                        echo '
+                                            while ($gift = $stmt_gifts->fetch(PDO::FETCH_ASSOC)) {
+                                                $reserved = intval($gift['reserved_by_user_id']) === $current_user_id ? 'checked' : '';
+                                                $reserved_by_another_user = intval($gift['reserved_by_user_id']) !== 0 && intval($gift['reserved_by_user_id']) !== $current_user_id;
+                                                $reserved_info = intval($gift['reserved_by_user_id']) !== 0 ? 'Réservé' : '';
+                                                echo '
 
-        <div class="container py-5">
-            <div class="row">
-                <div class="col-lg-8 mx-auto">
-                    <!-- List group-->
-                    <ul class="list-group shadow">
-                        <!-- list group item-->
-                        <li class="list-group-item">
-                            <!-- Custom content-->
-                            <div class="media align-items-lg-center flex-column flex-lg-row p-3">
-                                <div class="media-body order-2 order-lg-1">
-                                    <h5 class="mt-0 font-weight-bold mb-2">' . htmlspecialchars($gift['name']) . '</h5>
-                                    <p><a href="' . htmlspecialchars($gift['purchase_link']) . '">Lien vers le site d\'achat</a></p>
-                                    <div class="d-flex align-items-center justify-content-between mt-1">
-                                        <h6 class="font-weight-bold my-2"> ' . htmlspecialchars($gift['price']) . ' €</h6>';
-                                        if ($is_owner) {
-                                            echo '<a href="edit_gift.php?id=' . $gift['id'] . '">Modifier</a>';
-                                            echo '<a href="delete_gift.php?id=' . $gift['id'] . '">Supprimer</a>';
-                                        } else {
-                                            if ($reserved_by_another_user) {
-                                                echo '<p>Cadeau déjà pris par ' . $gift['reserved_by_user_first_name'] . '.</p>';
-                                            } else {
-                                                echo '<input type="checkbox" class="reserve-gift" data-gift-id="' . $gift['id'] . '" ' . $reserved . '>';
-                                                echo '<span class="reserved-info">' . $reserved_info . '</span>';
+              <tr class="candidates-list">
+                <td class="title">
+                  <div class="thumb">
+                  <img src="' . htmlspecialchars($gift['image'] ?? '', ENT_QUOTES, 'UTF-8') . '" alt="' . htmlspecialchars($gift['name'] ?? '', ENT_QUOTES, 'UTF-8') . '" alt="Generic placeholder image" width="200" class="img-responsive">
+                  </div>
+                  <div class="candidate-list-details">
+                    <div class="candidate-list-info">
+                      <div class="candidate-list-title">
+                        <h5 class="mb-0">' . htmlspecialchars($gift['name']) . '</h5>
+                      </div>
+                      <div class="candidate-list-option">
+                        <ul class="list-unstyled">
+                         <a href="' . htmlspecialchars($gift['purchase_link']) . '" class="btn btn-info">voir le produit</a>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="candidate-list-favourite-time text-center">
+                  <a class="candidate-list-favourite order-2 text-danger" href="#"><i class="fas fa-heart"></i></a>
+                  <span class="candidate-list-time order-1">' . htmlspecialchars($gift['price']) . ' €</span>
+                </td>
+                <td>
+                  <ul class="list-unstyled mb-0 d-flex justify-content-end">';
+                                                if ($is_owner) {
+                                                    echo '<a href="edit_gift.php?id=' . $gift['id'] . '" class="btn btn-warning">Modifier</a>';
+                                                    echo '<a href="delete_gift_process.php?id=' . $gift['id'] . '" class="btn btn-danger">Supprimer</a>';
+                                                } else {
+                                                    if ($reserved_by_another_user) {
+                                                        echo '<p>Cadeau déjà pris par ' . $gift['reserved_by_user_first_name'] . '.</p>';
+                                                    } else {
+                                                        echo '<input type="checkbox" class="reserve-gift" data-gift-id="' . $gift['id'] . '" ' . $reserved . '>
+                                    <span class="reserved-info">' . $reserved_info . '</span>';
+                                                    }
+                                                }
+                                                echo '
+                  </ul>
+                </td>
+              </tr>
+';
                                             }
-                                        }
-                                        echo '
-                                    </div>
-                                </div><img src="' . htmlspecialchars($gift['image'] ?? '', ENT_QUOTES, 'UTF-8') . '" alt="' . htmlspecialchars($gift['name'] ?? '', ENT_QUOTES, 'UTF-8') . '" alt="Generic placeholder image" width="200" class="ml-lg-5 order-1 order-lg-2">
-                            </div>
-                            <!-- End -->
-                        </li>
-                        <!-- End -->
 
-                    </ul>
-                    <!-- End -->
+                                            if ($is_owner) {
+
+                                                // Formulaire pour ajouter un nouveau
+                                                echo ' 
+                                                <button type="button" data-bs-toggle="modal" data-bs-target="#giftaddModal" class="btn btn-primary">Ajouter un cadeau</button>
+
+                                                <div class="modal fade" id="giftaddModal" tabindex="-1" aria-labelledby="giftaddModal" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="passwordResetModalLabel">Ajouter un cadeau</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <form action="add_gift.php" method="POST">
+                                                                <input type="hidden" name="list_id" value="' . $list_id . '">
+                                                                <label for="name" class="form-label">Nom :</label>
+                                                                <input type="text" class="form-control" name="name" id="name" required>
+                                                                <label for="price" class="form-label">Prix :</label>
+                                                                <input type="number" class="form-control" step="0.01" name="price" id="price" required>
+                                                                <label for="url" class="form-label">Lien d\'achat :</label>
+                                                                <input type="url" class="form-control" name="url" id="url" placeholder="https://www.url.fr" required>
+                                                                <label for="image" class="form-label">Lien de l\'image :</label>
+                                                                <input type="url" class="form-control" name="image" id="image"><br>
+                                                                <button type="submit" class="btn btn-primary">Ajouter</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>';
+                                            }
+                                        } else {
+                                            echo "Cette liste n'existe pas.";
+                                        }
+                                    } catch (PDOException $e) {
+                                        echo "Erreur lors de la récupération des données : " . $e->getMessage();
+                                    }
+                                } else {
+                                    echo "Aucune liste sélectionnée.";
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+
+                    </div>
                 </div>
             </div>
-        </div>';  
-                        echo '</div>';
-                    }
+        </div>
+        </div>
 
-                    if ($is_owner) {
-                        // Formulaire pour ajouter un nouveau
-                        echo '<form action="add_gift.php" method="POST">';
-                        echo '<input type="hidden" name="list_id" value="' . $list_id . '">';
-                        echo '<h2>Ajouter un nouveau cadeau</h2>';
-                        echo '<label for="name">Nom :</label>';
-                        echo '<input type="text" name="name" id="name" required>';
-                        echo '<label for="price">Prix :</label>';
-                        echo '<input type="number" step="0.01" name="price" id="price" required>';
-                        echo '<label for="url">Lien d\'achat :</label>';
-                        echo '<input type="url" name="url" id="url" required>';
-                        echo '<label for="image">Lien de l\'image :</label>';
-                        echo '<input type="url" name="image" id="image">';
-                        echo '<button type="submit">Ajouter</button>';
-                        echo '</form>';
-                    }
-                } else {
-                    echo "Cette liste n'existe pas.";
-                }
-            } catch (PDOException $e) {
-                echo "Erreur lors de la récupération des données : " . $e->getMessage();
-            }
-        } else {
-            echo "Aucune liste sélectionnée.";
-        }
-        ?>
     </main>
+    <!-- SCRIPT -->
     <script>
         document.querySelectorAll('.reserve-gift').forEach(checkbox => {
             checkbox.addEventListener('change', async () => {

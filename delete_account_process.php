@@ -15,6 +15,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_delete_gift_selections->bindParam(':user_id', $_SESSION['user_id']);
         $stmt_delete_gift_selections->execute();
     
+        // Supprimez toutes les listes de cadeaux associées à l'utilisateur
+        $stmt_delete_gift_lists = $conn->prepare("DELETE FROM gift_lists WHERE user_id = :user_id");
+        $stmt_delete_gift_lists->bindParam(':user_id', $_SESSION['user_id']);
+        $stmt_delete_gift_lists->execute();
+    
         // Supprimez l'utilisateur de la table users
         $stmt_delete_user = $conn->prepare("DELETE FROM users WHERE id = :user_id");
         $stmt_delete_user->bindParam(':user_id', $_SESSION['user_id']);
@@ -31,6 +36,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $conn->rollBack();
         echo "Erreur lors de la suppression du compte : " . $e->getMessage();
     }
-    
+        
 }
 ?>

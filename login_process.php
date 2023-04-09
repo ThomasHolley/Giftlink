@@ -15,6 +15,23 @@ if (isset($_POST['login'])) {
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (password_verify($password, $user['password'])) {
+                $stay_connected = isset($_POST['stay_connected']);
+                $user_id = $user['id'];
+                
+                if ($stay_connected) {
+                    // Générez un identifiant de session unique
+                    $session_id = bin2hex(random_bytes(32));
+                
+                    // Mettez à jour la base de données avec l'identifiant de session
+                    $stmt_update_session = $conn->prepare("UPDATE users SET session_id = :session_id WHERE id = :user_id");
+                    $stmt_update_session->bindParam(':session_id', $session_id);
+                    $stmt_update_session->bindParam(':user_id', $user_id);
+                    $stmt_update_session->execute();
+                
+                    // Créez un cookie contenant l'identifiant de session avec une durée de vie de 30 jours
+                    setcookie("session_id", $session_id, time() + (86400 * 30), "/");
+                }
+                
                 // Authentification réussie, démarrer la session
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['email'] = $user['email'];

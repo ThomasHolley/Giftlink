@@ -27,7 +27,7 @@
         echo '<div class="alert alert-success" role="alert">Votre compte a été supprimé avec succès.</div>';
     }
     ?>
-    
+
     <br>
     <div class="container">
         <div class="row">
@@ -51,9 +51,11 @@
                         <input type="password" class="form-control" name="password" id="password" required>
                     </div>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                        <label class="form-check-label" for="exampleCheck1">Rester connecté</label>
+                        <input type="checkbox" class="form-check-input" id="exampleCheck1" name="stay_connected">
+
+                        <label class="form-check-label" for="stay_connected">Rester connecté</label>
                     </div>
+
                     <button type="submit" class="btn btn-primary" name="login">Connexion</button>
                     <a class="btn btn-info" href="register.php" role="button">inscription</a>
                     <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#passwordResetModal">Mot de passe oublié ?</button>

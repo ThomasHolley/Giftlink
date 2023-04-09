@@ -1,34 +1,49 @@
 <?php
+require_once 'config.php';
+
 session_start();
+$current_user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['gift_id'])) {
-        $gift_id = intval($_POST['gift_id']);
+if (isset($_GET['id']) && $current_user_id !== null) {
+    $gift_id = intval($_GET['id']);
 
-        // Connexion à la base de données
-        require_once 'config.php';
+    try {
+        // Récupérer les informations du cadeau
+        $stmt_gift = $conn->prepare("SELECT id, gift_list_id FROM gifts WHERE id = :gift_id");
+        $stmt_gift->bindParam(':gift_id', $gift_id);
+        $stmt_gift->execute();
+        $gift = $stmt_gift->fetch(PDO::FETCH_ASSOC);
 
-        try {
-            // Supprimer le cadeau
-            $stmt_delete = $conn->prepare("DELETE FROM gifts WHERE id = :gift_id");
-            $stmt_delete->bindParam(':gift_id', $gift_id);
-            
-            if ($stmt_delete->execute()) {
-                echo json_encode([
-                    'success' => true,
-                ]);
+        if ($gift) {
+            // Récupérer les informations de la liste
+            $stmt_list = $conn->prepare("SELECT id, user_id FROM gift_lists WHERE id = :list_id");
+            $stmt_list->bindParam(':list_id', $gift['gift_list_id']);
+            $stmt_list->execute();
+            $list = $stmt_list->fetch(PDO::FETCH_ASSOC);
+
+            if ($list && intval($list['user_id']) === $current_user_id) {
+                // Supprimer les enregistrements associés dans gift_selections
+                $stmt_delete_selections = $conn->prepare("DELETE FROM gift_selections WHERE gift_id = :gift_id");
+                $stmt_delete_selections->bindParam(':gift_id', $gift_id);
+                $stmt_delete_selections->execute();
+
+                // Supprimer le cadeau
+                $stmt_delete = $conn->prepare("DELETE FROM gifts WHERE id = :gift_id");
+                $stmt_delete->bindParam(':gift_id', $gift_id);
+                $stmt_delete->execute();
+
+                header("Location: view_list.php?id=" . $gift['gift_list_id']);
+                exit;
             } else {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Erreur lors de la suppression du cadeau.',
-                ]);
+                echo "Vous n'êtes pas autorisé à supprimer ce cadeau.";
             }
-        } catch (PDOException $e) {
-            echo "Erreur lors de la suppression du cadeau : " . $e->getMessage();
+        } else {
+            echo "Ce cadeau n'existe pas.";
         }
-    } else {
-        echo "ID du cadeau non fourni.";
+    } catch (PDOException $e) {
+        echo "Erreur lors de la suppression du cadeau : " . $e->getMessage();
     }
 } else {
-    echo "Méthode de requête non autorisée.";
+    echo "Aucun cadeau sélectionné ou utilisateur non connecté.";
 }
+?>

@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -17,14 +20,65 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/css/bootstrap.min.css" integrity="sha384-r4NyP46KrjDleawBgD5tp8Y7UzmLA05oM1iAEQ17CSuDqnUK2+k9luXQOfXJCJ4I" crossorigin="anonymous">
     <!-- Font Awesome CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <script src="main.js" defer></script>
+    <style>
+        .search-wrapper {
+            position: relative;
+        }
+
+        #search-results {
+            position: absolute;
+            z-index: 100;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 1rem;
+            width: 100%;
+            display: none;
+            box-sizing: border-box;
+            top: 100%;
+            left: 0;
+        }
+
+        .popup-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            display: none;
+            font-size: 1rem;
+            z-index: 1000;
+        }
+
+        .message-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .message {
+            background-color: #444;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+    </style>
+
 </head>
 
 <body>
     <!-- ... (code HTML existant) ... -->
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light" id="navbar">
             <div class="container-fluid">
-                <a class="navbar-brand" href="login.php">
+            <a class="navbar-brand" href="index.php">
                     <img src="src/logo/Logo_GiftLink_V1.png" alt="" width="50" height="48" class="d-inline-block align-text-top">
                 </a>
                 <div class="collapse navbar-collapse" id="navbarNavDropdown">
@@ -35,12 +89,16 @@
                         <li class="nav-item">
                             <a class="nav-link" href="profile.php">Profil</a>
                         </li>
-                        <li class="nav-item">
-                            <form action="search.php" method="get" class="search-form">
-                                <input type="text" name="search" placeholder="Rechercher des utilisateurs..." required>
+                        <!-- index.php -->
+                        <li class="nav-item search-wrapper">
+                            <form action="search.php" method="get" class="search-form" id="search-form">
+                                <input type="text" name="search" id="search" placeholder="Rechercher des utilisateurs..." required>
                                 <button type="submit">Rechercher</button>
                             </form>
+                            <div id="search-results"></div>
                         </li>
+
+
                         <li class="nav-item">
                             <a class="nav-link" href="logout.php">Déconnexion</a>
                         </li>
@@ -51,7 +109,6 @@
     </header>
     <!-- ... (code HTML existant) ... -->
 
-    </header>
 
     <main>
         <br>
@@ -61,7 +118,6 @@
                     <h2>Listes des amis</h2>
                     <?php
                     require_once 'config.php';
-                    session_start();
                     $current_user_id = $_SESSION['user_id'];
 
                     // Récupérer la liste des amis
@@ -93,7 +149,6 @@
                     } catch (PDOException $e) {
                         echo "Erreur lors de la récupération des listes des amis : " . $e->getMessage();
                     }
-
                     ?>
                 </div>
                 <div class="col-md-6">
@@ -133,6 +188,43 @@
             </div>
         </div>
     </main>
+    <div id="message-container" class="message-container"></div>
+
 </body>
+<!-- index.php -->
+<!-- ... (reste du code <body>) ... -->
+<script>
+    $(document).ready(function() {
+        $(".friend-request-form").on("submit", function(e) {
+            e.preventDefault();
+            const form = $(this);
+            const submitButton = form.find("button[type='submit']");
+
+            $.ajax({
+                url: form.attr("action"),
+                method: form.attr("method"),
+                data: form.serialize(),
+                beforeSend: function() {
+                    submitButton.prop("disabled", true);
+                },
+                success: function(response) {
+                    showPopupMessage(response);
+                },
+                complete: function() {
+                    submitButton.prop("disabled", false);
+                }
+            });
+        });
+
+        function showPopupMessage(message) {
+            const popup = $("<div class='popup-message'></div>");
+            popup.text(message);
+            $("body").append(popup);
+            popup.fadeIn(300).delay(5000).fadeOut(300, function() {
+                popup.remove();
+            });
+        }
+    });
+</script>
 
 </html>

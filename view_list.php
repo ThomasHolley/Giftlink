@@ -18,24 +18,32 @@
 
 <body>
     <header>
-
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light" id="navbar">
             <div class="container-fluid">
             <a class="navbar-brand" href="index.php">
-                <img src="src/logo/Logo_GiftLink_V1.png" alt="" width="50" height="48" class="d-inline-block align-text-top">
-            </a>
+                    <img src="src/logo/Logo_GiftLink_V1.png" alt="" width="50" height="48" class="d-inline-block align-text-top">
+                </a>
                 <div class="collapse navbar-collapse" id="navbarNavDropdown">
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="nav-link" href="index.php">Accueil</a>
+                            <a class="nav-link" href="create_list.php">Créer une nouvelle liste</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="profile.php">Profil</a>
                         </li>
+                        <!-- index.php -->
+                        <li class="nav-item search-wrapper">
+                            <form action="search.php" method="get" class="search-form" id="search-form">
+                                <input type="text" name="search" id="search" placeholder="Rechercher des utilisateurs..." required>
+                                <button type="submit">Rechercher</button>
+                            </form>
+                            <div id="search-results"></div>
+                        </li>
+
+
                         <li class="nav-item">
                             <a class="nav-link" href="logout.php">Déconnexion</a>
                         </li>
-
                     </ul>
                 </div>
             </div>

@@ -63,14 +63,10 @@
             <p class="text-muted mb-4">Bay Area, San Francisco, CA</p>
             <div class="d-flex justify-content-center mb-2">
               <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">Modifier son profil</button>
-              <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
-  Supprimer le compte
-</button>
-
+              <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">Supprimer le compte</button>
             </div>
           </div>
         </div>
-        
       </div>
       <div class="col-lg-8">
         <div class="card mb-4">
@@ -124,8 +120,58 @@
        
       </div>
     </div>
-  </div>
-</section>';
+  </div>';
+  // Récupérer la liste des amis
+$friends_sql = "SELECT users.id, users.first_name, users.last_name FROM users
+JOIN friendships ON (users.id = friendships.user_id1 OR users.id = friendships.user_id2)
+WHERE (friendships.user_id1 = :current_user_id OR friendships.user_id2 = :current_user_id)
+AND friendships.status = 'accepted' AND users.id != :current_user_id";
+$friends_stmt = $conn->prepare($friends_sql);
+$friends_stmt->execute(['current_user_id' => $current_user_id]);
+$friends = $friends_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+echo '<h2>Liste d\'amis</h2>';
+echo '<ul class="list-group">';
+foreach ($friends as $friend) {
+echo '<li class="list-group-item d-flex justify-content-between align-items-center">';
+echo htmlspecialchars($friend['first_name']) . ' ' . htmlspecialchars($friend['last_name']);
+echo '<form action="remove_friend.php" method="post" onsubmit="return confirm(\'Êtes-vous sûr de vouloir supprimer cet ami ?\');">';
+echo '<input type="hidden" name="friend_id" value="' . htmlspecialchars($friend['id']) . '">';
+echo '<button type="submit" class="btn btn-danger btn-sm">Supprimer</button>';
+echo '</form>';
+echo '</li>';
+}
+echo '</ul>';
+
+  echo '<h3 class="mt-4 mb-3">Demandes d\'amis reçues :</h3>';
+
+$friend_requests_sql = "SELECT users.id, users.first_name, users.last_name, users.profile_picture FROM users INNER JOIN friendships ON users.id = friendships.user_id1 WHERE friendships.user_id2 = :current_user_id AND friendships.status = 'pending'";
+$friend_requests_stmt = $conn->prepare($friend_requests_sql);
+$friend_requests_stmt->execute(['current_user_id' => $current_user_id]);
+
+if ($friend_requests_stmt->rowCount() > 0) {
+    echo '<ul class="list-group mb-4">';
+    while ($friend_request = $friend_requests_stmt->fetch(PDO::FETCH_ASSOC)) {
+        echo '<li class="list-group-item d-flex justify-content-between align-items-center">';
+        echo htmlspecialchars($friend_request['first_name']) . ' ' . htmlspecialchars($friend_request['last_name']);
+        echo '<div>';
+        echo '<form action="accept_friend_request.php" method="POST" class="d-inline">';
+        echo '<input type="hidden" name="user_id" value="' . $friend_request['id'] . '">';
+        echo '<button type="submit" class="btn btn-success">Accepter</button>';
+        echo '</form>';
+        echo '<form action="reject_friend_request.php" method="POST" class="d-inline ms-2">';
+        echo '<input type="hidden" name="user_id" value="' . $friend_request['id'] . '">';
+        echo '<button type="submit" class="btn btn-danger">Refuser</button>';
+        echo '</form>';
+        echo '</div>';
+        echo '</li>';
+    }
+    echo '</ul>';
+} else {
+    echo '<p>Aucune demande d\'ami reçue.</p>';
+}
+
+echo '</section>';
         } else {
           echo "Utilisateur introuvable.";
         }

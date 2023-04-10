@@ -51,41 +51,88 @@
     </header>
     <!-- ... (code HTML existant) ... -->
 
+    </header>
+
     <main>
         <br>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h2>Listes des amis</h2>
+                    <?php
+                    require_once 'config.php';
+                    session_start();
+                    $current_user_id = $_SESSION['user_id'];
 
-        <?php
-        require_once 'config.php';
-        session_start();
+                    // Récupérer la liste des amis
+                    try {
+                        $friend_stmt = $conn->prepare("SELECT * FROM friendships WHERE (user_id1 = :current_user_id OR user_id2 = :current_user_id) AND status = 'accepted'");
+                        $friend_stmt->execute(['current_user_id' => $current_user_id]);
 
-        try {
-            $stmt = $conn->query("SELECT gift_lists.id, gift_lists.user_id, gift_lists.name, gift_lists.created_at, users.first_name, users.last_name FROM gift_lists JOIN users ON gift_lists.user_id = users.id ORDER BY gift_lists.created_at DESC");
+                        while ($friendship = $friend_stmt->fetch(PDO::FETCH_ASSOC)) {
+                            $friend_id = ($friendship['user_id1'] == $current_user_id) ? $friendship['user_id2'] : $friendship['user_id1'];
 
-            while ($list = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                echo '
-                <div class="card" style="width: 18rem;">
-                    <div class="card-body">
-                        <h5 class="card-title"><a href="view_list.php?id=' . $list['id'] . '">' . htmlspecialchars($list['name']) . '</a></h5>
-                        <h6 class="card-subtitle mb-2 text-muted">' . date('d/m/Y', strtotime($list['created_at'])) . '</h6>
-                        <p>Liste de ' . htmlspecialchars($list['first_name']) . ' ' . htmlspecialchars($list['last_name']) . '</p>
-                        <a href="view_list.php?id=' . $list['id'] . '" class="btn btn-labeled btn-primary"><span class="btn-label"><i class="fa fa-eye"></i></span></a>
-                ';
-                // Vérifie si l'utilisateur connecté est le créateur de la liste
-                if (isset($_SESSION['user_id']) && intval($_SESSION['user_id']) === intval($list['user_id'])) {
-                    echo '<a href="delete_list.php?id=' . $list['id'] . '" class="btn btn-labeled btn-danger"><span class="btn-label"><i class="fa fa-trash"></i></span></a>           
+                            // Récupérer les listes de cadeaux pour chaque ami
+                            $stmt = $conn->prepare("SELECT gift_lists.id, gift_lists.user_id, gift_lists.name, gift_lists.created_at, users.first_name, users.last_name 
+                            FROM gift_lists JOIN users ON gift_lists.user_id = users.id WHERE gift_lists.user_id = :friend_id ORDER BY gift_lists.created_at DESC");
+                            $stmt->execute(['friend_id' => $friend_id]);
 
-                    ';
-                }
-                echo '</div>
-                </div><br>';
-            }
-        } catch (PDOException $e) {
-            echo "Erreur lors de la récupération des listes : " . $e->getMessage();
-        }
-        ?>
+                            while ($list = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                echo '
+                                    <div class="card" style="width: 18rem;">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><a href="view_list.php?id=' . $list['id'] . '">' . htmlspecialchars($list['name']) . '</a></h5>
+                                            <h6 class="card-subtitle mb-2 text-muted">' . date('d/m/Y', strtotime($list['created_at'])) . '</h6>
+                                            <p>Liste de ' . htmlspecialchars($list['first_name']) . ' ' . htmlspecialchars($list['last_name']) . '</p>
+                                            <a href="view_list.php?id=' . $list['id'] . '" class="btn btn-labeled btn-primary"><span class="btn-label"><i class="fa fa-eye"></i></span></a>
+                                        </div>
+                                    </div>
+                                    ';
+                            }
+                        }
+                    } catch (PDOException $e) {
+                        echo "Erreur lors de la récupération des listes des amis : " . $e->getMessage();
+                    }
 
+                    ?>
+                </div>
+                <div class="col-md-6">
+                    <h2>Mes listes</h2>
+                    <?php
+                    try {
+                        $stmt = $conn->prepare("SELECT gift_lists.id, gift_lists.user_id, gift_lists.name, gift_lists.created_at, users.first_name, users.last_name 
+                    FROM gift_lists JOIN users ON gift_lists.user_id = users.id 
+                    WHERE gift_lists.user_id = :current_user_id ORDER BY gift_lists.created_at DESC");
+                        $stmt->execute(['current_user_id' => $current_user_id]);
+
+                        while ($list = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                            // Affiche les listes de l'utilisateur connecté ici
+                            echo '
+                        <div class="card" style="width: 18rem;">
+                            <div class="card-body">
+                                <h5 class="card-title"><a href="view_list.php?id=' . $list['id'] . '">' . htmlspecialchars($list['name']) . '</a></h5>
+                                <h6 class="card-subtitle mb-2 text-muted">' . date('d/m/Y', strtotime($list['created_at'])) . '</h6>
+                                <p>Liste de ' . htmlspecialchars($list['first_name']) . ' ' . htmlspecialchars($list['last_name']) . '</p>
+                                <a href="view_list.php?id=' . $list['id'] . '" class="btn btn-labeled btn-primary"><span class="btn-label"><i class="fa fa-eye"></i></span></a>
+   
+                                ';
+                            // Vérifie si l'utilisateur connecté est le créateur de la liste
+                            if (isset($_SESSION['user_id']) && intval($_SESSION['user_id']) === intval($list['user_id'])) {
+                                echo '<a href="delete_list.php?id=' . $list['id'] . '" class="btn btn-labeled btn-danger"><span class="btn-label"><i class="fa fa-trash"></i></span></a>           
+        
+                            ';
+                            }
+                            echo '</div>
+                        </div><br>';
+                        }
+                    } catch (PDOException $e) {
+                        echo "Erreur lors de la récupération de mes listes : " . $e->getMessage();
+                    }
+                    ?>
+                </div>
+            </div>
+        </div>
     </main>
-
 </body>
 
 </html>

@@ -32,4 +32,3 @@ if (isset($_SESSION['user_id']) && isset($_POST['user_id'])) {
 } else {
     echo "Informations manquantes pour envoyer une demande d'ami.";
 }
-?>
